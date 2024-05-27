@@ -12,6 +12,7 @@ if 'initialized' not in st.session_state:
     st.session_state['name'] = ""
     st.session_state['attempts'] = 0
     st.session_state['previous_difference'] = float('inf')
+    st.session_state['chat_history'] = []
 
 def get_example(num1, num2):
     scenarios = [
@@ -47,6 +48,20 @@ def handle_response(num1, num2, user_answer):
 
     return response
 
+# Function to respond emotionally to user input
+def respond_emotionally(user_input):
+    responses = {
+        "good": "That's great to hear! 😊",
+        "well": "I'm glad you're doing well! 👍",
+        "okay": "Okay, let's get started then! 😄",
+        "not good": "Oh, I'm sorry to hear that. 😔",
+        "bad": "I hope things get better soon. 🙏"
+    }
+    for keyword in responses:
+        if keyword in user_input.lower():
+            return responses[keyword]
+    return "I understand. Let's get started! 🚀"
+
 # Ask for the user's name if not already provided
 if not st.session_state['initialized']:
     name = st.text_input("What's your name?", key="name_input")
@@ -56,16 +71,32 @@ if not st.session_state['initialized']:
 
 if st.session_state['initialized']:
     st.write(f"Hello, {st.session_state['name']}! How are you doing today?")
+
+    # Get user input and respond emotionally
+    user_response = st.text_input("Tell me how you are doing:", key="user_response")
+    if user_response:
+        st.session_state['chat_history'].append(f"You: {user_response}")
+        st.write(respond_emotionally(user_response))
+        st.session_state['chat_history'].append(f"AI: {respond_emotionally(user_response)}")
+        for msg in st.session_state['chat_history']:
+            st.write(msg)
+        
+    st.write("What would you like to do? ")
     
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
         num1 = st.number_input("Enter first number:", format="%d", key="num1")
     with col2:
+        operation = st.selectbox("Choose an operation", ["+", "-"], key="operation")
+    with col3:
         num2 = st.number_input("Enter second number:", format="%d", key="num2")
-    
-    user_answer = st.number_input("What is the sum of these numbers?", format="%d", key="user_ans")
+
+    user_answer = st.number_input("What is the result?", format="%d", key="user_ans")
     submit = st.button("Submit")
     
     if submit:
-        response = handle_response(num1, num2, user_answer)
+        if operation == "+":
+            response = handle_response(num1, num2, user_answer)
+        else:
+            response = handle_response(num1, -num2, user_answer)  # Handle subtraction
         st.write(response)
