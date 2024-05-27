@@ -7,11 +7,9 @@ st.set_page_config(page_title="Addition Tutor AI")
 st.header("Learn to Add with AI")
 
 # Initialize session variables if they don't exist
-if 'name' not in st.session_state:
-    st.session_state['name'] = None
-    st.session_state['num1'] = None
-    st.session_state['num2'] = None
-    st.session_state['user_answer'] = None
+if 'initialized' not in st.session_state:
+    st.session_state['initialized'] = False
+    st.session_state['name'] = ""
     st.session_state['attempts'] = 0
     st.session_state['previous_difference'] = float('inf')
 
@@ -49,10 +47,14 @@ def handle_response(num1, num2, user_answer):
 
     return response
 
-if 'name' not in st.session_state or st.session_state['name'] is None:
-    st.session_state['name'] = st.text_input("What's your name?")
+# Ask for the user's name if not already provided
+if not st.session_state['initialized']:
+    name = st.text_input("What's your name?", key="name_input")
+    if st.button("Enter", key="enter_name"):
+        st.session_state['name'] = name
+        st.session_state['initialized'] = True
 
-if st.session_state['name']:
+if st.session_state['initialized']:
     st.write(f"Hello, {st.session_state['name']}! How are you doing today?")
     
     col1, col2 = st.columns(2)
