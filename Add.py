@@ -1,58 +1,78 @@
 import streamlit as st
+import random
 
-# Initialize our Streamlit app
-st.set_page_config(page_title="Addition Tutor")
+# Set up page configuration
+st.set_page_config(page_title="Addition Tutor AI")
 
-st.header("Learn to Add with AI")
-
-# Initialize session state for tracking attempts and previous differences
-if 'attempts' not in st.session_state:
+# Initialize session variables
+if 'state' not in st.session_state:
+    st.session_state.state = 'intro'
     st.session_state.attempts = 0
     st.session_state.previous_difference = float('inf')
 
-# Input fields for numbers side by side
-col1, col2 = st.columns(2)
-with col1:
-    number1 = st.number_input("First number:", format="%f", key="num1")
-with col2:
-    number2 = st.number_input("Second number:", format="%f", key="num2")
+def get_example(num1, num2):
+    # Generating a random example based on simple scenarios
+    scenarios = [
+        f"Imagine you have {num1} apples and find {num2} more.",
+        f"If you were stacking {num1} books and got {num2} more books, how many would you have?",
+        f"Picture having {num1} pencils, and you buy {num2} more. Total pencils?",
+        # Add more scenarios up to 15 or more
+    ]
+    return random.choice(scenarios)
 
-# Convert float inputs to integers
-number1 = int(number1)
-number2 = int(number2)
-
-# Input for user's answer
-user_answer = st.number_input("What is the sum of these numbers?", key="user_ans")
-
-# Button to submit the answer
-submit = st.button("Check my answer")
-
-# Function to generate examples based on how off the mark the user is
-def generate_example(num1, num2, difference):
-    if difference > 10:
-        return f"Let's think big! If you have {num1} toy cars and your friend gives you {num2} more, how many do you have? Start from {num1} and count up {num2} more."
-    elif difference > 5:
-        return f"Imagine you're helping to set up {num1} chairs, and then {num2} more chairs arrive. Count out loud from {num1} up to {num1 + num2} to see how many chairs there are in total."
-    else:
-        return f"You're very close! You're stacking blocks. You already have {num1} blocks and add {num2} more. Try to stack them one by one to see the total."
-
-# Respond to the button click
-if submit:
-    correct_answer = number1 + number2
+def handle_response(user_answer, num1, num2):
+    correct_answer = num1 + num2
     difference = abs(user_answer - correct_answer)
+    closer = difference < st.session_state.previous_difference
+    response = ""
     
     if user_answer == correct_answer:
-        st.write("Congratulations! You got it right! 🎉 Keep up the good work and try more questions to practice!")
-        st.session_state.attempts = 0  # Reset attempts after a correct answer
-        st.session_state.previous_difference = float('inf')
+        response = "That's correct! 🎉 Great job! Try changing the numbers to practice more."
+        st.session_state.state = 'completed'
     else:
-        if difference < st.session_state.previous_difference:
-            st.write("You're on the right track! You're getting closer!")
+        if st.session_state.attempts > 0:
+            if closer:
+                response = "You're getting closer! Try again, you can do it!"
+            else:
+                response = "That's not quite right. Let's try another approach."
         else:
-            st.write("That's not quite right. Let's try another approach.")
-
-        example = generate_example(number1, number2, difference)
-        st.write("Here's an example to help you:")
-        st.write(example)
+            response = "That’s not correct. Here’s an example to help you understand:"
+        
+        example = get_example(num1, num2)
+        response += f" {example}"
         st.session_state.attempts += 1
         st.session_state.previous_difference = difference
+
+    return response
+
+def main_conversation():
+    st.title("Welcome to the Addition Tutor AI!")
+    
+    if st.session_state.state == 'intro':
+        name = st.text_input("What's your name?")
+        if name:
+            st.session_state.state = 'greeting'
+            st.session_state.name = name
+
+    if st.session_state.state == 'greeting':
+        st.write(f"Hello, {st.session_state.name}! How are you doing today?")
+        st.session_state.state = 'problem_setup'
+    
+    if st.session_state.state == 'problem_setup':
+        st.write("Let's start with an addition problem.")
+        st.session_state.state = 'collect_numbers'
+
+    if st.session_state.state == 'collect_numbers':
+        col1, col2 = st.columns(2)
+        with col1:
+            st.session_state.num1 = st.number_input("Enter first number:", key="num1")
+        with col2:
+            st.session_state.num2 = st.number_input("Enter second number:", key="num2")
+        
+        user_answer = st.number_input("What is the sum of these numbers?", key="user_answer")
+        if st.button("Submit"):
+            response = handle_response(user_answer, st.session_state.num1, st.session_state.num2)
+            st.write(response)
+
+if __name__ == '__main__':
+    main_conversation()
