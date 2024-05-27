@@ -77,4 +77,10 @@ if st.session_state.initialized:
     with col2:
         num2 = st.number_input("Enter second number:", format="%d", key="num2")
     
-    user_answer = st.number_input("What is the result?", format="%d",
+    user_answer = st.number_input("What is the result?", format="%d", key="user_ans")
+    submit = st.button("Check my answer", key="submit")
+
+    # Step 6: Handle the response based on user's answer
+    if submit and operation:
+        response = handle_response(num1, num2, user_answer, operation)
+        st.write(response)
