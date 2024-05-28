@@ -1,4 +1,5 @@
 import streamlit as st
+import random  # Ensure this import is included
 
 # Set up page configuration
 st.set_page_config(page_title="Interactive Math Tutor")
@@ -10,47 +11,56 @@ if 'initialized' not in st.session_state:
     st.session_state.initialized = False
     st.session_state.name = ""
     st.session_state.operation = None
+    st.session_state.attempts = 0
+    st.session_state.previous_difference = float('inf')
+    st.session_state.example_index = 0
 
 def get_example(num1, num2, operation):
-    if operation == 'add':
-        action = "gain"
-        scenario = "How many do you have now?"
-    else:
-        action = "lose"
-        scenario = "How many do you have left?"
-    
-    examples = [
-        f"Imagine you have {num1} candies and you {action} {num2}. {scenario}",
-        f"If you had {num1} apples and you {action} {num2} apples, {scenario}"
-    ]
+    subjects = ["toy cars", "stickers", "books", "pencils", "apples", "coins"]
+    subject = subjects[st.session_state.example_index % len(subjects)]
+    st.session_state.example_index += 1
 
-    return random.choice(examples)
+    if operation == 'add':
+        return f"Imagine you have {num1} {subject} and gain {num2} more. How many {subject} do you have now?"
+    elif operation == 'subtract':
+        if num1 >= num2:
+            return f"You have {num1} {subject}. You need to give away {num2} {subject}. Start removing them one by one."
+        else:
+            needed = num2 - num1
+            return (f"You have {num1} {subject}. You need to give away {num2} {subject}. After giving away all {num1}, "
+                    f"you still need to give {needed} more. Now, you owe {needed} {subject}.")
 
 def handle_response(num1, num2, user_answer, operation):
     operations = {
-        "add": lambda x, y: x + y,
-        "subtract": lambda x, y: x - y
+        "add": num1 + num2,
+        "subtract": num1 - num2
     }
     correct_answer = operations[operation](num1, num2)
     difference = abs(user_answer - correct_answer)
     response = ""
 
     if user_answer == correct_answer:
-        response = "That's correct! 🎉 Great job!"
+        response = "That's correct! 🎉 Great job! Try another one?"
+        st.session_state.attempts = 0
     else:
-        if difference < 5:
-            response = "You're very close! 😊 Keep trying!"
-        elif difference < 10:
-            response = "Not quite right, but you're on the right track. 🤔"
+        if st.session_state.attempts > 0:
+            if difference < st.session_state.previous_difference:
+                response = "You're getting closer! 😊 Keep trying, you're doing well!"
+            elif difference == st.session_state.previous_difference:
+                response = "You're close, but just as close as last time. Try tweaking your answer a bit!"
+            else:
+                response = "It seems like you're moving away from the correct answer. 😟 Let's try another way."
         else:
-            response = "It seems you're a bit far from the correct answer. 😟 Let's try another example."
+            response = "That’s not quite right. 😕 Here’s an example to help you think about it:"
         
         example = get_example(num1, num2, operation)
         response += f" {example}"
+        st.session_state.attempts += 1
+        st.session_state.previous_difference = difference
 
     return response
 
-# Step 1: Ask for the user's name if it has not been set
+# Step 1: Ask for the user's name
 if 'name' not in st.session_state or not st.session_state.name:
     st.session_state.name = st.text_input("What's your name?", key="name_input")
     if st.session_state.name:
