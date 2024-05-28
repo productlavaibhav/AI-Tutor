@@ -16,16 +16,20 @@ if 'initialized' not in st.session_state:
 
 def get_example(num1, num2, operation):
     if operation == 'add':
+        action = "gaining"
+    else:
+        action = "losing"
+
+    if operation == 'subtract' and num1 < num2:
         examples = [
-            f"Imagine you have {num1} candies and you find {num2} more on your way home.",
-            f"If you had {num1} stickers and someone gave you {num2} more stickers, how many would you have altogether?",
-            f"Think of {num1} birds sitting on a tree, and {num2} more birds join them. How many birds are there now?"
+            f"Imagine you try to spend {num2} candies but you only have {num1}. You would end up {num2 - num1} short.",
+            f"If you have {num1} pages to read to finish a book but you attempt to read {num2} pages, you go over by {num2 - num1} pages."
         ]
-    elif operation == 'subtract':
+    else:
         examples = [
-            f"Imagine you have {num1} candies and you give {num2} to your friend. How many do you have left?",
-            f"If you had {num1} stickers and you lost {num2} of them, how many stickers would you still have?",
-            f"Consider {num1} birds on a tree, but {num2} flew away. How many birds are left on the tree?"
+            f"Imagine you have {num1} candies and you're {action} {num2}.",
+            f"If you had {num1} books and were {action} {num2} books, how many would you have?",
+            f"Picture having {num1} pencils, and you're {action} {num2}. Total pencils?"
         ]
     return random.choice(examples)
 
@@ -42,8 +46,13 @@ def handle_response(num1, num2, user_answer, operation):
         response = "That's correct! 🎉 Great job!"
         st.session_state.attempts = 0
     else:
-        if st.session_state.attempts > 0 and difference < st.session_state.previous_difference:
-            response = "You're getting closer! 😊 Try again, you can do it!"
+        if st.session_state.attempts > 0:
+            if difference < st.session_state.previous_difference:
+                response = "You're getting closer! 😊 Keep trying, you're doing well!"
+            elif difference == st.session_state.previous_difference:
+                response = "You're close, but just as close as last time. Try tweaking your answer a bit!"
+            else:
+                response = "It seems like you're moving away from the correct answer. 😟 Let's try another way."
         else:
             response = "That’s not quite right. 😕 Here’s an example to help you understand:"
         
@@ -62,9 +71,9 @@ if 'name' not in st.session_state or not st.session_state['name']:
 if st.session_state['name'] and not st.session_state.initialized:
     feeling = st.text_input(f"Hello, {st.session_state['name']}! How are you doing today?", key="emotion_input")
     if feeling:
-        emotional_reply = "I'm sorry to hear that. 😟 Let's see if we can brighten your day with some math!" if 'not good' in feeling.lower() or 'bad' in feeling.lower() else "That's great to hear! 😄 Let's dive into some math!"
-        st.write(emotional_reply)
+        emotional_reply = "I'm here if you need to talk. 😌 Are you looking to dive into some math to distract yourself a bit?" if 'not good' in feeling.lower() or 'bad' in feeling.lower() else "That's wonderful! 😄 Shall we add some fun with math?"
         st.session_state.initialized = True
+        st.write(emotional_reply)
 
 # Step 4: Ask what operation they want to perform
 if st.session_state.initialized:
