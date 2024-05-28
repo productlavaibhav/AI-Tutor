@@ -96,11 +96,11 @@ if st.session_state.initialized:
     # Step 5: Show the fields for input numbers and response
     col1, col2 = st.columns(2)
     with col1:
-        num1 = st.number_input("Enter first number:", format="%d", key="num1")
+        num1 = st.number_input("Enter first number:", format="%d", key="num1", step=1) # Add step=1 to control input as integer only
     with col2:
-        num2 = st.number_input("Enter second number:", format="%d", key="num2")
+        num2 = st.number_input("Enter second number:", format="%d", key="num2", step=1) # Add step=1 to control input as integer only
     
-    user_answer = st.number_input("What is the result?", format="%d", key="user_ans")
+    user_answer = st.number_input("What is the result?", format="%d", key="user_ans", step=1) # Add step=1 to control input as integer only
     submit = st.button("Check my answer", key="submit")
 
     # Step 6: Handle the response based on user's answer
