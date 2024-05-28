@@ -56,6 +56,20 @@ def handle_response(num1, num2, user_answer, operation):
 
     return response
 
+# **Define the function outside the conditional block**
+def get_emotional_reply(response):
+    positive_keywords = ["good", "great", "well", "amazing"]
+    negative_keywords = ["bad", "not good", "terrible", "sad"]
+
+    for keyword in positive_keywords:
+        if keyword in response.lower():
+            return "That's awesome! 😊 Let's dive into some math problems!"
+    for keyword in negative_keywords:
+        if keyword in response.lower():
+            return "Oh, I'm sorry to hear that. 😔  Maybe some math can help you feel better! Let's try it!"
+    return "Okay, let's get started! 🚀"
+
+
 # Step 1: Ask for the user's name
 if 'name' not in st.session_state or not st.session_state['name']:
     st.session_state['name'] = st.text_input("What's your name?", key="name_input")
@@ -86,15 +100,3 @@ if st.session_state.initialized:
     if submit and operation:
         response = handle_response(num1, num2, user_answer, operation)
         st.write(response)
-
-def get_emotional_reply(response):
-    positive_keywords = ["good", "great", "well", "amazing"]
-    negative_keywords = ["bad", "not good", "terrible", "sad"]
-
-    for keyword in positive_keywords:
-        if keyword in response.lower():
-            return "That's awesome! 😊 Let's dive into some math problems!"
-    for keyword in negative_keywords:
-        if keyword in response.lower():
-            return "Oh, I'm sorry to hear that. 😔  Maybe some math can help you feel better! Let's try it!"
-    return "Okay, let's get started! 🚀"
