@@ -63,7 +63,9 @@ if 'name' not in st.session_state or not st.session_state['name']:
 # Step 2: Ask what operation they want to perform
 if st.session_state['name'] and not st.session_state['initialized']:
     operation = st.radio("What would you like to do today?", ('add', 'subtract'), key="operation_select")
-    st.session_state['initialized'] = True
+    if operation:
+        st.session_state['operation'] = operation
+        st.session_state['initialized'] = True
 
 # Step 3: Show the fields for input numbers and response
 if st.session_state['initialized']:
@@ -77,6 +79,6 @@ if st.session_state['initialized']:
     submit = st.button("Check my answer", key="submit")
 
     # Step 4: Handle the response based on user's answer
-    if submit and operation:
-        response = handle_response(num1, num2, user_answer, operation)
+    if submit and st.session_state['operation']:
+        response = handle_response(num1, num2, user_answer, st.session_state['operation'])
         st.write(response)
