@@ -68,12 +68,16 @@ def get_emotional_reply(response):
     positive_keywords = ["good", "great", "well", "amazing"]
     negative_keywords = ["bad", "not good", "terrible", "sad", "ill"]
 
-    for keyword in positive_keywords:
-        if keyword in response.lower():
-            return "That's awesome! 😊 Let's dive into some math problems!"
+    # Check for negative keywords first
     for keyword in negative_keywords:
         if keyword in response.lower():
             return "Oh, it's sad to hear that. 😔  Maybe some math problems can help you feel better!  As I think you love maths! Let's try it!"
+
+    # Check for positive keywords only if no negative keywords were found
+    for keyword in positive_keywords:
+        if keyword in response.lower():
+            return "That's awesome! 😊 Let's dive into some math problems!"
+
     return "Okay, let's get started! 🚀"
 
 
