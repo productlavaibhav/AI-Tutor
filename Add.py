@@ -66,14 +66,14 @@ def handle_response(num1, num2, user_answer, operation):
 # **Define the function outside the conditional block**
 def get_emotional_reply(response):
     positive_keywords = ["good", "great", "well", "amazing"]
-    negative_keywords = ["bad", "not good", "terrible", "sad"]
+    negative_keywords = ["bad", "not good", "terrible", "sad", "ill"]
 
     for keyword in positive_keywords:
         if keyword in response.lower():
             return "That's awesome! 😊 Let's dive into some math problems!"
     for keyword in negative_keywords:
         if keyword in response.lower():
-            return "Oh, I'm sorry to hear that. 😔  Maybe some math can help you feel better! Let's try it!"
+            return "Oh, it's sad to hear that. 😔  Maybe some math problems can help you feel better!  As I think you love maths! Let's try it!"
     return "Okay, let's get started! 🚀"
 
 
