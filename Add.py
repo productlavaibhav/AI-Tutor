@@ -16,15 +16,21 @@ if 'initialized' not in st.session_state:
     st.session_state['example_index'] = 0
 
 def get_example(num1, num2, operation):
-    # List of different subjects for examples
-    subjects = ["candies", "stickers", "books", "pencils", "apples", "coins"]
+    # Selecting subject based on the random index
+    subjects = ["toy cars", "stickers", "books", "pencils", "apples", "coins"]
     subject = subjects[st.session_state.example_index % len(subjects)]
     st.session_state.example_index += 1
 
     if operation == 'add':
         return f"Imagine you have {num1} {subject} and gain {num2} more. How many {subject} do you have now?"
     elif operation == 'subtract':
-        return f"If you had {num1} {subject} and lost {num2}, how many {subject} would you have left?"
+        if num1 >= num2:
+            return f"You have {num1} {subject}. You need to give away {num2} {subject}. Start removing them one by one."
+        else:
+            needed = num2 - num1
+            return (f"You have {num1} {subject} (imagine {num1} {subject}). "
+                    f"You need to give away {num2} {subject}. After giving away all {num1}, "
+                    f"you still need to give {needed} more. Now, you owe {needed} {subject}.")
 
 def handle_response(num1, num2, user_answer, operation):
     operations = {
@@ -56,19 +62,29 @@ def handle_response(num1, num2, user_answer, operation):
 
     return response
 
-# Step 1: Ask for the user's name
-if 'name' not in st.session_state or not st.session_state['name']:
-    st.session_state['name'] = st.text_input("What's your name?", key="name_input")
+# Navigation function
+def go_back():
+    if st.session_state['initialized']:
+        st.session_state['initialized'] = False
 
-# Step 2: Ask what operation they want to perform
-if st.session_state['name'] and not st.session_state['initialized']:
-    operation = st.radio("What would you like to do today?", ('add', 'subtract'), key="operation_select")
-    if operation:
-        st.session_state['operation'] = operation
+# Navigation Button
+if st.session_state['initialized']:
+    st.button("Go Back", on_click=go_back)
+
+# Step 1: Ask for the user's name
+if not st.session_state['initialized']:
+    name = st.text_input("What's your name?", key="name_input")
+    if name:
+        st.session_state['name'] = name
         st.session_state['initialized'] = True
 
+# Step 2: Ask what operation they want to perform
+if st.session_state['initialized'] and not st.session_state['operation']:
+    operation = st.radio("What would you like to do today?", ('add', 'subtract'), key="operation_select")
+    st.session_state['operation'] = operation
+
 # Step 3: Show the fields for input numbers and response
-if st.session_state['initialized']:
+if st.session_state['operation']:
     col1, col2 = st.columns(2)
     with col1:
         num1 = st.number_input("Enter first number:", format="%d", key="num1")
@@ -79,6 +95,6 @@ if st.session_state['initialized']:
     submit = st.button("Check my answer", key="submit")
 
     # Step 4: Handle the response based on user's answer
-    if submit and st.session_state['operation']:
+    if submit:
         response = handle_response(num1, num2, user_answer, st.session_state['operation'])
         st.write(response)
