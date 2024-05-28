@@ -1,5 +1,4 @@
 import streamlit as st
-import random
 
 # Set up page configuration
 st.set_page_config(page_title="Interactive Math Tutor")
@@ -8,93 +7,64 @@ st.header("Interactive Math Tutor")
 
 # Initialize session variables if they don't exist
 if 'initialized' not in st.session_state:
-    st.session_state['initialized'] = False
-    st.session_state['name'] = ""
-    st.session_state['operation'] = None
-    st.session_state['attempts'] = 0
-    st.session_state['previous_difference'] = float('inf')
-    st.session_state['example_index'] = 0
+    st.session_state.initialized = False
+    st.session_state.name = ""
+    st.session_state.operation = None
 
 def get_example(num1, num2, operation):
-    # Selecting subject based on the random index
-    subjects = ["toy cars", "stickers", "books", "pencils", "apples", "coins"]
-    subject = subjects[st.session_state.example_index % len(subjects)]
-    st.session_state.example_index += 1
-
     if operation == 'add':
-        return f"Imagine you have {num1} {subject} and gain {num2} more. How many {subject} do you have now?"
-    elif operation == 'subtract':
-        if num1 >= num2:
-            return f"You have {num1} {subject}. You need to give away {num2} {subject}. Start removing them one by one."
-        else:
-            needed = num2 - num1
-            return (f"You have {num1} {subject} (imagine {num1} {subject}). "
-                    f"You need to give away {num2} {subject}. After giving away all {num1}, "
-                    f"you still need to give {needed} more. Now, you owe {needed} {subject}.")
+        action = "gain"
+        scenario = "How many do you have now?"
+    else:
+        action = "lose"
+        scenario = "How many do you have left?"
+    
+    examples = [
+        f"Imagine you have {num1} candies and you {action} {num2}. {scenario}",
+        f"If you had {num1} apples and you {action} {num2} apples, {scenario}"
+    ]
+
+    return random.choice(examples)
 
 def handle_response(num1, num2, user_answer, operation):
     operations = {
-        "add": num1 + num2,
-        "subtract": num1 - num2
+        "add": lambda x, y: x + y,
+        "subtract": lambda x, y: x - y
     }
-    correct_answer = operations[operation]
+    correct_answer = operations[operation](num1, num2)
     difference = abs(user_answer - correct_answer)
     response = ""
-    
+
     if user_answer == correct_answer:
-        response = "That's correct! 🎉 Great job! Try another one?"
-        st.session_state.attempts = 0
+        response = "That's correct! 🎉 Great job!"
     else:
-        if st.session_state.attempts > 0:
-            if difference < st.session_state.previous_difference:
-                response = "You're getting closer! 😊 Keep trying, you're doing well!"
-            elif difference == st.session_state.previous_difference:
-                response = "You're close, but just as close as last time. Try tweaking your answer a bit!"
-            else:
-                response = "It seems like you're moving away from the correct answer. 😟 Let's try another way."
+        if difference < 5:
+            response = "You're very close! 😊 Keep trying!"
+        elif difference < 10:
+            response = "Not quite right, but you're on the right track. 🤔"
         else:
-            response = "That’s not quite right. 😕 Here’s an example to help you think about it:"
+            response = "It seems you're a bit far from the correct answer. 😟 Let's try another example."
         
         example = get_example(num1, num2, operation)
         response += f" {example}"
-        st.session_state.attempts += 1
-        st.session_state.previous_difference = difference
 
     return response
 
-# Navigation function
-def go_back():
-    if st.session_state['initialized']:
-        st.session_state['initialized'] = False
-
-# Navigation Button
-if st.session_state['initialized']:
-    st.button("Go Back", on_click=go_back)
-
-# Step 1: Ask for the user's name
-if not st.session_state['initialized']:
-    name = st.text_input("What's your name?", key="name_input")
-    if name:
-        st.session_state['name'] = name
-        st.session_state['initialized'] = True
+# Step 1: Ask for the user's name if it has not been set
+if 'name' not in st.session_state or not st.session_state.name:
+    st.session_state.name = st.text_input("What's your name?", key="name_input")
+    if st.session_state.name:
+        st.session_state.initialized = True
 
 # Step 2: Ask what operation they want to perform
-if st.session_state['initialized'] and not st.session_state['operation']:
-    operation = st.radio("What would you like to do today?", ('add', 'subtract'), key="operation_select")
-    st.session_state['operation'] = operation
+if st.session_state.initialized and not st.session_state.operation:
+    st.session_state.operation = st.radio("What would you like to do today?", ('add', 'subtract'), key="operation_select")
 
 # Step 3: Show the fields for input numbers and response
-if st.session_state['operation']:
-    col1, col2 = st.columns(2)
-    with col1:
-        num1 = st.number_input("Enter first number:", format="%d", key="num1")
-    with col2:
-        num2 = st.number_input("Enter second number:", format="%d", key="num2")
-    
+if st.session_state.operation:
+    num1 = st.number_input("Enter first number:", format="%d", key="num1")
+    num2 = st.number_input("Enter second number:", format="%d", key="num2")
     user_answer = st.number_input("What is the result?", format="%d", key="user_ans")
-    submit = st.button("Check my answer", key="submit")
-
-    # Step 4: Handle the response based on user's answer
-    if submit:
-        response = handle_response(num1, num2, user_answer, st.session_state['operation'])
+    if st.button("Check my answer", key="submit"):
+        response = handle_response(num1, num2, user_answer, st.session_state.operation)
         st.write(response)
