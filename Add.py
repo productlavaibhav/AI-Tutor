@@ -24,11 +24,18 @@ def get_example(num1, num2, operation):
         ]
     else:
         action = "subtracting"
-        examples = [
-            f"You have {num1} cookies, and you eat {num2} of them. How many cookies are left?",
-            f"You have {num1} balloons, and {num2} pop. How many balloons are left?",
-            f"You have {num1} candies, and you give {num2} to your friend. How many candies do you have left?"
-        ]
+        if num1 >= num2:
+            examples = [
+                f"You have {num1} cookies, and you eat {num2} of them. How many cookies are left?",
+                f"You have {num1} balloons, and {num2} pop. How many balloons are left?",
+                f"You have {num1} candies, and you give {num2} to your friend. How many candies do you have left?"
+            ]
+        else:
+            examples = [
+                f"You have {num1} toy cars. You need to give away {num2} toy cars.  Since you only have {num1}, you'll have to give away all of them and still owe some!  How many will you owe?",
+                f"You have {num1} marbles, and you want to give {num2} to your friends. You don't have enough!  How many more marbles would you need to give away all {num2}?",
+                f"You have {num1} stickers. You want to give {num2} to your classmates. You don't have enough! How many more stickers would you need to give away all {num2}?"
+            ]
     return random.choice(examples)
 
 def handle_response(num1, num2, user_answer, operation):
@@ -100,3 +107,11 @@ if st.session_state.initialized:
     if submit and operation:
         response = handle_response(num1, num2, user_answer, operation)
         st.write(response)
+
+    # Add a back button
+    if st.button("Back to Main Menu"):
+        st.session_state.initialized = False
+        st.session_state.name = ""
+        st.session_state.operation = None
+        st.session_state.attempts = 0
+        st.session_state.previous_difference = float('inf')
