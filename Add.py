@@ -17,19 +17,20 @@ if 'initialized' not in st.session_state:
 def get_example(num1, num2, operation):
     if operation == 'add':
         action = "gaining"
+        example_action = "gain"
     else:
         action = "losing"
+        example_action = "lose"
 
     if operation == 'subtract' and num1 < num2:
         examples = [
-            f"Imagine you try to spend {num2} candies but you only have {num1}. You would end up {num2 - num1} short.",
-            f"If you have {num1} pages to read to finish a book but you attempt to read {num2} pages, you go over by {num2 - num1} pages."
+            f"Imagine you try to spend {num2} candies but you only have {num1}. How many would you be short?",
+            f"If you have {num1} pages to read to finish a book but you attempt to read {num2} pages, by how many pages would you go over?"
         ]
     else:
         examples = [
-            f"Imagine you have {num1} candies and you're {action} {num2}.",
-            f"If you had {num1} books and were {action} {num2} books, how many would you have?",
-            f"Picture having {num1} pencils, and you're {action} {num2}. Total pencils?"
+            f"Imagine you have {num1} candies and you're {action} {num2}. How many candies do you have after you {example_action} them?",
+            f"If you had {num1} books and were {action} {num2} books, how many books would you have in total?"
         ]
     return random.choice(examples)
 
@@ -54,7 +55,7 @@ def handle_response(num1, num2, user_answer, operation):
             else:
                 response = "It seems like you're moving away from the correct answer. 😟 Let's try another way."
         else:
-            response = "That’s not quite right. 😕 Here’s an example to help you understand:"
+            response = "That’s not quite right. 😕 Here’s an example to help you think about it:"
         
         example = get_example(num1, num2, operation)
         response += f" {example}"
@@ -71,9 +72,9 @@ if 'name' not in st.session_state or not st.session_state['name']:
 if st.session_state['name'] and not st.session_state.initialized:
     feeling = st.text_input(f"Hello, {st.session_state['name']}! How are you doing today?", key="emotion_input")
     if feeling:
-        emotional_reply = "I'm here if you need to talk. 😌 Are you looking to dive into some math to distract yourself a bit?" if 'not good' in feeling.lower() or 'bad' in feeling.lower() else "That's wonderful! 😄 Shall we add some fun with math?"
-        st.session_state.initialized = True
+        emotional_reply = "I'm here if you need to talk. 😌 Are you ready to dive into some math to distract yourself a bit?" if 'not good' in feeling.lower() or 'bad' in feeling.lower() else "That's wonderful! 😄 Shall we add some fun with math?"
         st.write(emotional_reply)
+        st.session_state.initialized = True
 
 # Step 4: Ask what operation they want to perform
 if st.session_state.initialized:
